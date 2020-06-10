@@ -1,1 +1,74 @@
 
+The first step in building a proper election on Substrate is to make sure our node is runnning
+
+# Setup Rust and Substrate
+curl https://getsubstrate.io -sSf | bash -s -- --fast
+
+
+Next, we must compile that node
+
+# Clone the Recipes Repository
+git clone https://github.com/substrate-developer-hub/recipes.git
+cd recipes
+
+#  Update Rust-Wasm toolchain
+./nodes/scripts/init.sh
+
+# Compile the Kitchen Node
+# This step takes a while to complete
+cargo build --release -p kitchen-node
+
+
+For this implementation we will be using the "Kitchen Node" 
+as our Substrate Parachain
+
+# Purge existing blockchain data (if any)
+./target/release/kitchen-node purge-chain --dev
+
+# Start a fresh development blockchain
+./target/release/kitchen-node --dev
+
+Now we simply apply our election contract to the Substrate chain
+//This makes it possible to cast a vote digitally on a live blockchain
+where the security guarentees of the blockchain prevent voter duplication
+
+contract Election {
+   
+    struct Voter {
+        uint weight; // weight is accumulated by delegation
+        bool voted;  // if true, that person already voted
+        address delegate; // person delegated to
+        uint vote;   // index of the voted proposal
+    }
+
+    struct Proposal {
+        // If you can limit the length to a certain number of bytes, 
+        // always use one of bytes1 to bytes32 because they are much cheaper
+        bytes32 name;   // short name (up to 32 bytes)
+        uint voteCount; // number of accumulated votes
+    }
+
+    address public chairperson;
+
+    mapping(address => Voter) public voters;
+
+    Proposal[] public proposals;
+
+    /** 
+     * @dev Create a new ballot to choose one of 'proposalNames'.
+     * @param proposalNames names of proposals
+     */
+    constructor(bytes32[] memory proposalNames) public {
+        chairperson = msg.sender;
+        voters[chairperson].weight = 1;
+
+        for (uint i = 0; i < proposalNames.length; i++) {
+            // 'Proposal({...})' creates a temporary
+            // Proposal object and 'proposals.push(...)'
+            // appends it to the end of 'proposals'.
+            proposals.push(Proposal({
+                name: proposalNames[i],
+                voteCount: 0
+            }));
+        }
+    }
