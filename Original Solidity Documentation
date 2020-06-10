@@ -1,3 +1,8 @@
+**. NOTE: This code is taken from the Solidity documentation page,
+I am not the original author of this page. I simply use this as a
+launching point for how substrate would build a proper election.
+
+
 pragma solidity >=0.4.22 <0.7.0;
 
 /** 
