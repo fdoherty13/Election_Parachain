@@ -143,7 +143,7 @@ contract Ballot {
 launching point for how substrate would build a proper election.
 
 
-pragma solidity >=0.4.22 <0.7.0;
+
 
 /** 
  * @title Ballot
